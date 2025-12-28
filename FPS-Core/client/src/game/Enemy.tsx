@@ -14,6 +14,7 @@ import { useRef, useState } from 'react';
 import { Vector3, Mesh, Group } from 'three';
 import { useGameStore, EnemyType, LEVEL_CONFIGS } from './store';
 import { EnemyModel } from './ModelLoader';
+import { useEnemyAI } from './EnemyAI';
 
 interface EnemyProps {
   id: string;
@@ -46,7 +47,10 @@ export function Enemy({ id, position, type, health, maxHealth }: EnemyProps) {
   const meshRef = useRef<Mesh>(null);
   const [bobOffset] = useState(Math.random() * Math.PI * 2);
 
-  // Sync model position with physics body
+  // USE ADVANCED AI INSTEAD OF SIMPLE AI
+  const { movement, rotation, isAttacking } = useEnemyAI(id, type, position, api);
+
+  // Sync model position with physics body and apply AI
   useFrame((state) => {
     if (ref.current && modelRef.current) {
       const time = state.clock.getElapsedTime();
@@ -61,12 +65,13 @@ export function Enemy({ id, position, type, health, maxHealth }: EnemyProps) {
       const bob = Math.sin(time * bobSpeed + bobOffset) * bobAmount;
       modelRef.current.position.y += bob;
 
-      // Rotate to face player (simple AI)
-      const targetRotation = Math.atan2(
-        -ref.current.position.x,
-        -ref.current.position.z
-      );
-      modelRef.current.rotation.y = targetRotation;
+      // Use AI-calculated rotation instead of simple rotation
+      modelRef.current.rotation.y = rotation;
+
+      // Apply AI movement
+      if (movement.x !== 0 || movement.z !== 0) {
+        api.velocity.set(movement.x, 0, movement.z);
+      }
     }
 
     // Pulsating effect for fallback geometry
@@ -189,7 +194,7 @@ export function Enemy({ id, position, type, health, maxHealth }: EnemyProps) {
           <>
             <pointLight
               color="#ff0044"
-              intensity={1.5}
+              intensity={isAttacking ? 3 : 1.5}
               distance={10}
               castShadow
             />
@@ -199,6 +204,14 @@ export function Enemy({ id, position, type, health, maxHealth }: EnemyProps) {
               <meshBasicMaterial color="#ff0044" transparent opacity={0.6} />
             </mesh>
           </>
+        )}
+
+        {/* Attack indicator - glows when attacking */}
+        {isAttacking && (
+          <mesh position={[0, 0, 0]} scale={[1.2, 1.2, 1.2]}>
+            <sphereGeometry args={[size[0], 16, 16]} />
+            <meshBasicMaterial color="#ff0000" transparent opacity={0.3} wireframe />
+          </mesh>
         )}
       </group>
     </group>

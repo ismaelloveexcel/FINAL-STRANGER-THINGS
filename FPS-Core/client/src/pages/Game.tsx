@@ -15,11 +15,16 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { LEVEL_CONFIGS } from '@/game/store';
 import { Progress } from '@/components/ui/progress';
-import { AudioController } from '@/game/AudioManager';
+import { AudioController as AudioManagerEnhanced } from '@/game/AudioManagerEnhanced';
 import { DamageVignette } from '@/game/VisualEffects';
 import { getLevelStory, STORY_TEXT } from '@/game/StorySystem';
 import { MobileControls, isMobileDevice } from '@/game/MobileControls';
 import { IntroSequence } from '@/game/IntroSequence';
+import { PowerUpSpawner, ActivePowerUpsUI } from '@/game/PowerUps';
+import { WeaponSelector } from '@/game/WeaponSelector';
+import { KillFeed } from '@/game/KillFeed';
+import { BossHealthBar } from '@/game/BossHealthBar';
+import { CutsceneManager } from '@/game/Cutscenes';
 
 function UI() {
   const {
@@ -124,6 +129,12 @@ function UI() {
       <div className="crosshair" />
       <div className="vignette" />
       <div className="scanlines" />
+
+      {/* NEW ENHANCEMENTS */}
+      <ActivePowerUpsUI />
+      <KillFeed />
+      <BossHealthBar />
+      <WeaponSelector />
 
       {/* Level Transition Overlay */}
       {showLevelTransition && currentLevel < 3 && (() => {
@@ -364,12 +375,14 @@ export default function Game() {
             <Weapon />
             <EnemyManager />
             <Level />
+            <PowerUpSpawner />
           </Physics>
+          <CutsceneManager />
           <DamageVignette />
           {!isMobile && <PointerLockControls />}
         </Suspense>
       </Canvas>
-      <AudioController />
+      <AudioManagerEnhanced />
       <MobileControls
         onMove={handleMobileMove}
         onLook={handleMobileLook}

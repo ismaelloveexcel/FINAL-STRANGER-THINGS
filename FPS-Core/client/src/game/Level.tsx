@@ -4,6 +4,7 @@ import { useFrame } from '@react-three/fiber';
 import { useRef, useMemo } from 'react';
 import { PointLight } from 'three';
 import { Model } from './ModelLoader';
+import { EnvironmentInteractive } from './EnvironmentInteractive';
 
 export function Level() {
   const currentLevel = useGameStore(state => state.currentLevel);
@@ -477,6 +478,9 @@ export function Level() {
           />
         </>
       )}
+
+      {/* ENVIRONMENTAL HAZARDS & INTERACTIVITY */}
+      <EnvironmentInteractive />
     </>
   );
 }
