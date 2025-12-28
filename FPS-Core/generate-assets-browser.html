@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stranger Things - Asset Generator</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #ff0044;
+            text-align: center;
+            text-shadow: 0 0 10px #ff0044;
+        }
+        .container {
+            background: #1a1a1a;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        button {
+            background: #ff0044;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #cc0033;
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        .progress {
+            background: #000;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 3px solid #00ff00;
+            border-radius: 3px;
+        }
+        .success { color: #00ff00; }
+        .error { color: #ff0044; }
+        .warning { color: #ffff00; }
+        .status { color: #00ffff; }
+        #log {
+            background: #000;
+            padding: 15px;
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #00ff00;
+            margin-top: 20px;
+        }
+        .asset-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #0a0a0a;
+            border-left: 3px solid #ffff00;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 STRANGER THINGS - MESHY ASSET GENERATOR</h1>
+
+    <div class="container">
+        <h2 style="color: #00ffff;">Browser-Based Asset Generation</h2>
+        <p>This will generate 6 Stranger Things 3D models using Meshy AI.</p>
+        <p class="warning">⚠️ Keep this tab open during generation (30-60 minutes)</p>
+
+        <button id="startBtn" onclick="startGeneration()">🚀 START GENERATION</button>
+        <button id="downloadBtn" onclick="downloadAll()" disabled>📥 DOWNLOAD ALL MODELS</button>
+
+        <div id="stats" style="margin-top: 20px; display: none;">
+            <div class="progress">
+                <strong>Progress:</strong> <span id="progressText">0/6 models</span><br>
+                <strong>Status:</strong> <span id="statusText" class="status">Ready</span><br>
+                <strong>Time Elapsed:</strong> <span id="timeText">0:00</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="log"></div>
+
+    <script>
+        const API_KEY = 'msy_TgknSgucpW7n9PSmXXjCvEktvsqEEHCl1U2Y';
+        const API_URL = 'https://api.meshy.ai/v2/text-to-3d';
+
+        const ASSETS = {
+            'demogorgon': {
+                prompt: "Demogorgon monster from Stranger Things, terrifying humanoid creature with petal-like head opening to reveal teeth, pale skin, long arms, menacing pose, game-ready low poly model, PBR textures",
+                folder: 'enemies'
+            },
+            'mindFlayer': {
+                prompt: "Mind Flayer shadow monster from Stranger Things, massive dark tentacled creature, spider-like legs, shadowy ethereal appearance, ominous presence, game-ready low poly model, dark materials",
+                folder: 'enemies'
+            },
+            'vecna': {
+                prompt: "Vecna from Stranger Things season 4, humanoid villain with burned scarred skin, vines integrated into body, menacing pose, detailed face, evil appearance, game-ready model, PBR textures",
+                folder: 'enemies'
+            },
+            'upsideDownVine': {
+                prompt: "Upside Down vine tendril from Stranger Things, organic creeping plant, dark reddish brown color, slimy texture, twisted shape, game environment asset",
+                folder: 'environment'
+            },
+            'creelHouseDebris': {
+                prompt: "Destroyed house debris, broken wooden planks, shattered window frame, old Victorian style, weathered texture, game environment prop",
+                folder: 'environment'
+            },
+            'energyGun': {
+                prompt: "Futuristic energy pistol weapon, sci-fi design, glowing cyan accents, sleek metallic body, game FPS weapon model, first person view optimized",
+                folder: 'weapons'
+            }
+        };
+
+        let tasks = [];
+        let completedModels = [];
+        let startTime;
+
+        function log(message, className = '') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = className;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function createTask(name, config) {
+            log(`Creating task: ${name}...`, 'status');
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        mode: 'preview',
+                        prompt: config.prompt,
+                        art_style: 'realistic',
+                        negative_prompt: 'low quality, blurry, distorted',
+                        target_polycount: 10000,
+                        topology: 'quad'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.id) {
+                    log(`✓ Task created for ${name}: ${data.id}`, 'success');
+                    return { name, taskId: data.id, folder: config.folder };
+                } else {
+                    log(`✗ Failed to create ${name}: ${data.message || 'Unknown error'}`, 'error');
+                    return null;
+                }
+            } catch (err) {
+                log(`✗ Error creating ${name}: ${err.message}`, 'error');
+                return null;
+            }
+        }
+
+        async function checkStatus(taskId) {
+            const response = await fetch(`${API_URL}/${taskId}`, {
+                headers: {
+                    'Authorization': `Bearer ${API_KEY}`
+                }
+            });
+            return await response.json();
+        }
+
+        async function waitForCompletion(task) {
+            log(`Waiting for ${task.name} to complete...`, 'status');
+
+            for (let i = 0; i < 120; i++) {
+                await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10s
+
+                const status = await checkStatus(task.taskId);
+                const progress = status.progress ? `${status.progress}%` : '';
+
+                log(`${task.name}: ${status.status} ${progress}`, 'status');
+
+                if (status.status === 'SUCCEEDED') {
+                    log(`✓ ${task.name} completed!`, 'success');
+                    return { ...task, modelUrl: status.model_urls?.glb };
+                } else if (status.status === 'FAILED') {
+                    log(`✗ ${task.name} failed`, 'error');
+                    return null;
+                }
+            }
+
+            log(`✗ ${task.name} timed out`, 'error');
+            return null;
+        }
+
+        async function startGeneration() {
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('stats').style.display = 'block';
+            startTime = Date.now();
+
+            updateTimer();
+
+            log('🎮 STRANGER THINGS ASSET GENERATION STARTED', 'success');
+            log('', '');
+
+            // Create all tasks
+            log('📤 Creating generation tasks...', 'warning');
+            for (const [name, config] of Object.entries(ASSETS)) {
+                const task = await createTask(name, config);
+                if (task) tasks.push(task);
+            }
+
+            log('', '');
+            log(`✓ Created ${tasks.length} tasks`, 'success');
+            log('⏳ Waiting for completions (this may take 30-60 minutes)...', 'warning');
+            log('', '');
+
+            // Wait for all to complete
+            for (const task of tasks) {
+                const result = await waitForCompletion(task);
+                if (result && result.modelUrl) {
+                    completedModels.push(result);
+                    updateProgress();
+                }
+            }
+
+            log('', '');
+            log('✅ GENERATION COMPLETE!', 'success');
+            log(`Generated ${completedModels.length} models`, 'success');
+
+            if (completedModels.length > 0) {
+                document.getElementById('downloadBtn').disabled = false;
+                log('', '');
+                log('👉 Click "DOWNLOAD ALL MODELS" to save them', 'warning');
+            }
+        }
+
+        function updateProgress() {
+            document.getElementById('progressText').textContent = `${completedModels.length}/${Object.keys(ASSETS).length} models`;
+        }
+
+        function updateTimer() {
+            if (!startTime) return;
+
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const mins = Math.floor(elapsed / 60);
+            const secs = elapsed % 60;
+            document.getElementById('timeText').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+            setTimeout(updateTimer, 1000);
+        }
+
+        async function downloadAll() {
+            log('', '');
+            log('📥 Starting downloads...', 'warning');
+
+            for (const model of completedModels) {
+                try {
+                    log(`Downloading ${model.name}...`, 'status');
+
+                    const response = await fetch(model.modelUrl);
+                    const blob = await response.blob();
+
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${model.name}.glb`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+
+                    log(`✓ Downloaded ${model.name}.glb`, 'success');
+                    await new Promise(resolve => setTimeout(resolve, 1000)); // Small delay between downloads
+                } catch (err) {
+                    log(`✗ Error downloading ${model.name}: ${err.message}`, 'error');
+                }
+            }
+
+            log('', '');
+            log('✅ ALL DOWNLOADS COMPLETE!', 'success');
+            log('', '');
+            log('📁 Next steps:', 'warning');
+            log('1. Move downloaded .glb files to: public/models/enemies/ or public/models/weapons/', 'status');
+            log('2. Enable models in game', 'status');
+            log('3. Run: npm run dev', 'status');
+        }
+    </script>
+</body>
+</html>

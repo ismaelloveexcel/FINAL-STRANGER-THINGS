@@ -1,0 +1,191 @@
+@import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: 'Black Ops One', cursive;
+  --font-body: 'Rajdhani', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+
+  /* Cyberpunk / Sci-fi Palette */
+  --background: 220 15% 10%;
+  --foreground: 180 100% 90%;
+  
+  --primary: 180 100% 50%;
+  --primary-foreground: 220 20% 10%;
+  
+  --secondary: 320 100% 60%;
+  --secondary-foreground: 0 0% 100%;
+  
+  --muted: 220 20% 20%;
+  --muted-foreground: 220 20% 60%;
+  
+  --accent: 45 100% 60%;
+  --accent-foreground: 220 20% 10%;
+  
+  --destructive: 0 100% 60%;
+  --destructive-foreground: 0 0% 100%;
+  
+  --border: 220 20% 25%;
+  --input: 220 20% 25%;
+  --ring: 180 100% 50%;
+  
+  --radius: 0.25rem;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground antialiased overflow-hidden;
+    font-family: var(--font-body);
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    @apply uppercase tracking-wider text-primary shadow-cyan-500/20 drop-shadow-lg;
+  }
+}
+
+/* Canvas Container */
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+.canvas-container {
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+/* Custom UI Effects */
+.hud-text {
+  font-family: var(--font-mono);
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+}
+
+.crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 50;
+}
+
+.crosshair::before, .crosshair::after {
+  content: '';
+  position: absolute;
+  background: rgba(0, 255, 255, 0.8);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 4px cyan;
+}
+
+.crosshair::before { width: 2px; height: 16px; }
+.crosshair::after { width: 16px; height: 2px; }
+
+/* Vignette Effect */
+.vignette {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  box-shadow: 0 0 150px rgba(0,0,0,0.9) inset;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* CRT Scanline Effect */
+.scanlines {
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0),
+    rgba(255,255,255,0) 50%,
+    rgba(0,0,0,0.1) 50%,
+    rgba(0,0,0,0.1)
+  );
+  background-size: 100% 4px;
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+/* INTRO SEQUENCE ANIMATIONS */
+@keyframes gradient-x {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: gradient-x 3s ease infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 3s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 1s ease-out;
+}
+
+.animate-slide-in {
+  animation: slide-in 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-twinkle {
+  animation: twinkle 3s ease-in-out infinite;
+}
