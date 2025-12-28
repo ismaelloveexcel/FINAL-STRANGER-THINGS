@@ -48,6 +48,11 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
 
   const handleContinue = () => {
     if (step === 'dedication') {
+      // STOP MUSIC when leaving dedication screen
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
       setStep('story');
     } else {
       setStep('done');
@@ -94,35 +99,38 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
           <div className="space-y-12 animate-fade-in">
             {/* Dedication Message */}
             <div className="space-y-6">
-              <h1 className="text-8xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient-x mb-4">
+              <h1 className="text-5xl md:text-8xl font-bold bg-gradient-to-r from-red-500 via-orange-500 to-red-500 bg-clip-text text-transparent animate-gradient-x mb-4">
                 ✨ DEDICATED TO ✨
               </h1>
 
               <div className="relative">
-                <div className="absolute inset-0 blur-xl bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 opacity-50 animate-pulse" />
-                <h2 className="relative text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-300 drop-shadow-[0_0_30px_rgba(168,85,247,0.8)] animate-bounce-slow">
+                <div className="absolute inset-0 blur-xl bg-gradient-to-r from-red-600 via-orange-600 to-red-600 opacity-50 animate-pulse" />
+                <h2 className="relative text-6xl md:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-red-400 drop-shadow-[0_0_30px_rgba(255,0,0,0.8)] animate-bounce-slow">
                   AWESOME AIDAN
                 </h2>
               </div>
 
               <div className="mt-8 space-y-3">
-                <p className="text-3xl text-cyan-300 font-mono animate-pulse">
+                <p className="text-xl md:text-3xl text-red-400 font-mono animate-pulse">
                   🎮 Game Developer Extraordinaire 🎮
                 </p>
-                <p className="text-xl text-purple-300 italic">
+                <p className="text-base md:text-xl text-orange-300 italic">
                   "The mind behind the madness"
+                </p>
+                <p className="text-lg md:text-2xl text-white font-semibold mt-4 animate-fade-in">
+                  ~ From Ismael 💫
                 </p>
               </div>
 
-              {/* Glowing border effect */}
-              <div className="relative mt-12 p-8 rounded-lg border-4 border-transparent bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 bg-clip-padding">
-                <div className="bg-black rounded p-6">
-                  <p className="text-2xl text-white font-light leading-relaxed">
-                    This game is a tribute to your <span className="text-cyan-400 font-bold">creativity</span>,{' '}
-                    <span className="text-purple-400 font-bold">passion</span>, and{' '}
-                    <span className="text-pink-400 font-bold">awesomeness</span>.
+              {/* Glowing border effect - STRANGER THINGS COLORS */}
+              <div className="relative mt-12 p-4 md:p-8 rounded-lg border-4 border-transparent bg-gradient-to-r from-red-600 via-orange-600 to-red-600 bg-clip-padding">
+                <div className="bg-black rounded p-4 md:p-6">
+                  <p className="text-lg md:text-2xl text-white font-light leading-relaxed">
+                    This game is a tribute to your <span className="text-red-400 font-bold">creativity</span>,{' '}
+                    <span className="text-orange-400 font-bold">passion</span>, and{' '}
+                    <span className="text-red-500 font-bold">awesomeness</span>.
                   </p>
-                  <p className="text-lg text-gray-400 mt-4">
+                  <p className="text-sm md:text-lg text-gray-400 mt-4">
                     May you save Hawkins with style! 🔥
                   </p>
                 </div>
@@ -130,16 +138,16 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
             </div>
 
             {/* Music Note */}
-            <div className="flex items-center justify-center gap-3 text-cyan-400 animate-bounce">
-              <span className="text-4xl">🎵</span>
-              <p className="text-xl font-mono">Now playing: "Turn Around"</p>
-              <span className="text-4xl">🎵</span>
+            <div className="flex items-center justify-center gap-2 md:gap-3 text-red-400 animate-bounce">
+              <span className="text-2xl md:text-4xl">🎵</span>
+              <p className="text-base md:text-xl font-mono">Now playing: "Turn Around"</p>
+              <span className="text-2xl md:text-4xl">🎵</span>
             </div>
 
-            {/* Continue Button */}
+            {/* Continue Button - STRANGER THINGS THEME */}
             <Button
               onClick={handleContinue}
-              className="mt-8 px-12 py-8 text-3xl bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 transform hover:scale-110 transition-all duration-300 shadow-[0_0_50px_rgba(168,85,247,0.6)] font-bold animate-pulse"
+              className="mt-8 px-8 md:px-12 py-6 md:py-8 text-xl md:text-3xl bg-gradient-to-r from-red-700 to-orange-700 hover:from-red-600 hover:to-orange-600 transform hover:scale-110 transition-all duration-300 shadow-[0_0_50px_rgba(255,0,0,0.6)] font-bold animate-pulse"
             >
               CONTINUE TO ADVENTURE →
             </Button>
